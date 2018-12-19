@@ -1,0 +1,11 @@
+---
+- name: Update apt-get
+  become: yes
+  become_method: sudo
+  apt:
+    update_cache: yes
+
+
+- name: Hello World
+  copy: content="{{ greeting }}" dest=/tmp/hello-world.txt
+

@@ -1,0 +1,35 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# vagrant config
+Vagrant.configure("2") do |config|
+
+  # networking
+  config.vm.network :private_network, type: "dhcp"
+  config.vm.network :forwarded_port, guest: 22, host: 2222, id: "ssh"
+  config.vm.network :forwarded_port, guest: 8080, host: 8080
+
+  # syncing app data
+  config.vm.synced_folder ".", "/home/vagrant/base",
+    owner: "vagrant", group: "vagrant"
+
+  # configure vm
+  config.vm.provider :docker do |docker|
+    docker.image           = "bprinty/ansible"
+    docker.has_ssh         = true
+    docker.remains_running = true
+  end
+
+  # provision with ansible
+  config.vm.provision :ansible do |ansible|
+    ansible.verbose        = true
+    ansible.playbook       = "playbook.yml"
+    ansible.limit          = "vagrant"
+    ansible.inventory_path = "hosts"
+    ansible.extra_vars     = {
+      ansible_ssh_user: "vagrant",
+      ansible_ssh_port: 2222
+    }
+  end
+
+end

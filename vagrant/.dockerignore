@@ -1,0 +1,6 @@
+Makefile
+README.md
+Vagrantfile
+hosts
+roles
+playbook.yml
