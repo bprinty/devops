@@ -44,11 +44,7 @@ RUN devpi-server --restrict-modify root --start --host 127.0.0.1 --port 8080 --i
 VOLUME /data
 EXPOSE 8080
 
+# entrypoints
+CMD devpi
 ENTRYPOINT devpi-server --restrict-modify root --host 0.0.0.0 --port 8080 --start && \
            tail -f /data/.devpi/server/.xproc/devpi-server/xprocess.log
-CMD devpi
-
-# install apache
-# create user accounts
-# install pypi server
-# run pypi server
