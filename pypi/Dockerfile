@@ -1,31 +1,52 @@
-
-# THIS DOCKERFILE HAS NOT BEEN TESTED (CURRENTLY IN DEVELOPMENT)
-
-FROM debian:7
-
-RUN apt-get update
-RUN apt-get install -y \
-    build-essential \
-    python-dev \
-    python-pip \
-    libxml2-dev \
-    libxslt-dev \
-    libffi-dev \
-    libpq-dev
+#
+# Dockerfile to spin up private PyPi mirror.
+#
+# --------------------------------------------------------------
 
 
+# meta
+# ----
+FROM python:3.6.5
+MAINTAINER Blake Printy "bprinty@gmail.com"
+
+
+# config
+# ------
+ENV PIP_NO_CACHE_DIR="off"
+ENV PIP_INDEX_URL="https://pypi.python.org/simple"
+ENV PIP_TRUSTED_HOST="127.0.0.1"
+
+
+# install
+# -------
+# create devpi user
+RUN addgroup --system --gid 1000 devpi
+RUN adduser --disabled-password --system --uid 1000 --home /data --shell /sbin/nologin --gid 1000 devpi
+
+# install server
 RUN pip install \
-    pypiserver \
-    PASSLIB
+    devpi-server \
+    devpi-client \
+    devpi-web
 
-RUN mkdir /packages
-RUN echo 'password' | htpasswd -sc /home/.htaccess admin 
+# initialize devpi server
+USER devpi
+ENV HOME /data
+WORKDIR /data
+RUN devpi-server --restrict-modify root --start --host 127.0.0.1 --port 8080 --init && \
+    devpi use http://127.0.0.1:8080 && \
+    devpi login root --password='' && \
+    devpi user -m root password=admin && \
+    devpi index -y -c public pypi_whitelist='*' && \
+    devpi-server --stop
 
-RUN apt-get clean
+# expose volume and port
+VOLUME /data
+EXPOSE 8080
 
-EXPOSE 80
-
-ENTRYPOINT ['pypi-server -p 80 -P /home/.htaccess /packages']
+ENTRYPOINT devpi-server --restrict-modify root --host 0.0.0.0 --port 8080 --start && \
+           tail -f /data/.devpi/server/.xproc/devpi-server/xprocess.log
+CMD devpi
 
 # install apache
 # create user accounts
