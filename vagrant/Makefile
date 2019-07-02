@@ -10,7 +10,7 @@
 IMAGE       = bprinty/ansible
 PROJECT     = vagrant-docker
 BRANCH      = `git branch | grep '*' | awk '{print ":"$$2}' | grep -v 'master' | grep -v 'HEAD'`
-VERSION     = 0.0.5
+VERSION     = 0.0.6
 
 
 # targets
